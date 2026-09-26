@@ -482,9 +482,9 @@ export const EPIDEMIC_SURGE_SCENARIOS = [
 export const DEMO_PRESET_IMAGES = [
   {
     id: 'demo-asv-box',
-    name: 'Anti-Snake Venom 10ml Pack Photo',
-    type: 'Packaging Box Label',
-    thumbUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&q=80',
+    name: 'Anti-Snake Venom Packaging Box',
+    type: 'Carton Cover with Drug Name & Batch',
+    thumbUrl: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="100%" height="100%" fill="%230b1329"/><rect x="40" y="40" width="520" height="320" rx="16" fill="%23ffffff" stroke="%2338bdf8" stroke-width="4"/><rect x="40" y="40" width="520" height="70" rx="16" fill="%230284c7"/><text x="70" y="85" fill="%23ffffff" font-family="Arial, sans-serif" font-size="22" font-weight="bold">GOVERNMENT OF INDIA - NHM SUPPLY</text><text x="70" y="150" fill="%230f172a" font-family="Arial, sans-serif" font-size="26" font-weight="900">ANTI-SNAKE VENOM SERUM IP</text><text x="70" y="180" fill="%230369a1" font-family="Arial, sans-serif" font-size="16" font-weight="bold">POLYVALENT LYOPHILIZED 10ml VIAL</text><rect x="70" y="200" width="460" height="2" fill="%23e2e8f0"/><g font-family="Courier, monospace" font-size="15" fill="%23334155" font-weight="bold"><text x="70" y="235">BATCH NO:   ASV-24K-8812</text><text x="70" y="265">MFG DATE:   APR 2024</text><text x="70" y="295">EXP DATE:   MAR 2027</text><text x="320" y="235">QTY: 40 VIALS</text><text x="320" y="265">STORAGE: 2°C - 8°C</text><text x="320" y="295">MFG: BHARAT SERUMS</text></g><rect x="70" y="315" width="220" height="26" rx="6" fill="%23eff6ff" stroke="%2338bdf8"/><text x="80" y="333" fill="%230284c7" font-family="Arial, sans-serif" font-size="12" font-weight="bold">❄️ COLD CHAIN REQUIRED</text><rect x="360" y="315" width="170" height="26" fill="%230f172a"/><g fill="%23ffffff"><rect x="370" y="318" width="4" height="20"/><rect x="378" y="318" width="2" height="20"/><rect x="384" y="318" width="6" height="20"/><rect x="394" y="318" width="3" height="20"/><rect x="402" y="318" width="5" height="20"/><rect x="412" y="318" width="2" height="20"/><rect x="418" y="318" width="7" height="20"/><rect x="430" y="318" width="4" height="20"/><rect x="438" y="318" width="2" height="20"/><rect x="446" y="318" width="5" height="20"/><rect x="456" y="318" width="3" height="20"/><rect x="464" y="318" width="6" height="20"/><rect x="476" y="318" width="3" height="20"/><rect x="484" y="318" width="8" height="20"/><rect x="496" y="318" width="4" height="20"/><rect x="504" y="318" width="5" height="20"/><rect x="514" y="318" width="3" height="20"/></g></svg>`,
     mockExtracted: {
       medicineName: 'Anti-Snake Venom (Polyvalent 10ml Lyophilized)',
       manufacturer: 'Bharat Serums and Vaccines Ltd',
@@ -495,37 +495,37 @@ export const DEMO_PRESET_IMAGES = [
       unit: 'Vials',
       temperatureRequirement: '2°C - 8°C (Refrigerated Cold-Chain)',
       isColdChain: true,
-      confidenceScore: 0.98,
-      notes: 'Contains freeze-dried enzyme-purified equine globulins. Reconstitute with 10ml sterile water for injection.'
+      confidenceScore: 0.99,
+      notes: 'Freeze-dried enzyme-purified equine globulins. Reconstitute with 10ml sterile water for injection.'
     }
   },
   {
-    id: 'demo-oxytocin-ampoule',
-    name: 'Oxytocin 10 IU Injection Blister',
-    type: 'Ampoule Packaging',
-    thumbUrl: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=300&q=80',
+    id: 'demo-tablet-strip',
+    name: 'Ciprofloxacin 500mg Tablet Blister Cover',
+    type: 'Tablet Blister Foil with Printed Name',
+    thumbUrl: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="100%" height="100%" fill="%2309111e"/><rect x="40" y="40" width="520" height="320" rx="16" fill="%23f1f5f9" stroke="%2394a3b8" stroke-width="4"/><g opacity="0.15"><line x1="40" y1="90" x2="560" y2="90" stroke="%23475569" stroke-width="2"/><line x1="40" y1="150" x2="560" y2="150" stroke="%23475569" stroke-width="2"/><line x1="40" y1="210" x2="560" y2="210" stroke="%23475569" stroke-width="2"/><line x1="40" y1="270" x2="560" y2="270" stroke="%23475569" stroke-width="2"/><line x1="40" y1="330" x2="560" y2="330" stroke="%23475569" stroke-width="2"/></g><rect x="60" y="60" width="480" height="60" rx="8" fill="%231e293b"/><text x="80" y="100" fill="%2338bdf8" font-family="Arial, sans-serif" font-size="24" font-weight="900">CIPROFLOXACIN TABLETS IP 500mg</text><text x="80" y="145" fill="%23334155" font-family="Arial, sans-serif" font-size="14" font-weight="bold">Each film coated tablet contains: Ciprofloxacin Hydrochloride IP eq. to Ciprofloxacin 500mg</text><rect x="60" y="165" width="480" height="2" fill="%23cbd5e1"/><g font-family="Courier, monospace" font-size="16" fill="%230f172a" font-weight="bold"><text x="80" y="205">B.No. CIP-24M-4019</text><text x="320" y="205">MFG. MAY 2024</text><text x="80" y="240">EXP.  DEC 2026</text><text x="320" y="240">PACK: 10 x 10 TABLETS</text><text x="80" y="275">M.R.P. GOVT SUPPLY (FREE)</text><text x="320" y="275">MFG: CIPLA PHARMA LTD</text></g><rect x="60" y="295" width="260" height="45" rx="8" fill="%23fee2e2" stroke="%23ef4444"/><text x="75" y="322" fill="%23b91c1c" font-family="Arial, sans-serif" font-size="12" font-weight="bold">SCHEDULE H PRESCRIPTION DRUG</text><rect x="360" y="300" width="180" height="35" fill="%230f172a" rx="4"/><text x="385" y="323" fill="%2338bdf8" font-family="Courier, monospace" font-size="14" font-weight="bold">SCAN VERIFIED %23OK</text></svg>`,
     mockExtracted: {
-      medicineName: 'Oxytocin Injection IP (10 IU/ml)',
-      manufacturer: 'Karnataka Antibiotics & Pharmaceuticals',
-      batchNumber: 'OXY-24J-7710',
-      manufacturingDate: '2024-05-02',
-      expiryDate: '2026-10-31',
-      quantityDetected: 60,
-      unit: 'Ampoules',
-      temperatureRequirement: '2°C - 8°C (Store in refrigerator, do not freeze)',
-      isColdChain: true,
-      confidenceScore: 0.96,
-      notes: 'Life-saving maternal uterotonic for PPH prevention.'
+      medicineName: 'Ciprofloxacin Tablets IP 500mg',
+      manufacturer: 'Cipla Pharmaceuticals (Govt Supply)',
+      batchNumber: 'CIP-24M-4019',
+      manufacturingDate: '2024-05-10',
+      expiryDate: '2026-12-31',
+      quantityDetected: 100,
+      unit: 'Tablets (10 Strips)',
+      temperatureRequirement: 'Store below 30°C. Protect from light.',
+      isColdChain: false,
+      confidenceScore: 0.97,
+      notes: 'Broad-spectrum antibiotic. Strip printed label detected with high OCR fidelity.'
     }
   },
   {
     id: 'demo-handwritten-register',
-    name: 'Rural PHC Handwritten Stock Register',
-    type: 'Handwritten Paper Ledger (Odia/English)',
-    thumbUrl: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=300&q=80',
+    name: 'Handwritten Paper Stock Register / Slip',
+    type: 'Paper Ledger Entry (Odia / English)',
+    thumbUrl: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="100%" height="100%" fill="%2309111e"/><rect x="40" y="40" width="520" height="320" rx="10" fill="%23fef9c3" stroke="%23ca8a04" stroke-width="3"/><g stroke="%2393c5fd" stroke-width="1.5"><line x1="40" y1="80" x2="560" y2="80"/><line x1="40" y1="120" x2="560" y2="120"/><line x1="40" y1="160" x2="560" y2="160"/><line x1="40" y1="200" x2="560" y2="200"/><line x1="40" y1="240" x2="560" y2="240"/><line x1="40" y1="280" x2="560" y2="280"/><line x1="40" y1="320" x2="560" y2="320"/></g><line x1="120" y1="40" x2="120" y2="360" stroke="%23f87171" stroke-width="2"/><text x="140" y="70" fill="%231e293b" font-family="Georgia, serif" font-size="18" font-weight="bold">PHC Dispensary Daily Stock Register (Entry %23104)</text><g font-family="Georgia, serif" font-size="17" fill="%231e3a8a" font-style="italic"><text x="140" y="110">Drug: ORS Sachets 20.5g (Oral Salt)</text><text x="140" y="150">Batch No: ORS-24F-319</text><text x="140" y="190">Received Qty: 250 Sachets (10 Boxes)</text><text x="140" y="230">Expiry: Feb 2027  |  Mfg: FDC Ltd</text><text x="140" y="270">Condition: Good, Dry Storage Box %233</text><text x="140" y="310">Verified by: P. Dash, Pharmacist In-Charge</text></g><rect x="420" y="315" width="130" height="36" rx="6" fill="%23dbeafe" stroke="%233b82f6"/><text x="432" y="338" fill="%231d4ed8" font-family="Arial, sans-serif" font-size="12" font-weight="bold">OCR Extracted ✍️</text></svg>`,
     mockExtracted: {
       medicineName: 'Oral Rehydration Salts (ORS IP 20.5g Sachets)',
-      manufacturer: 'FDC Limited (Govt. Supply Not for Sale)',
+      manufacturer: 'FDC Limited (Govt Supply)',
       batchNumber: 'ORS-24F-319',
       manufacturingDate: '2024-03-10',
       expiryDate: '2027-02-28',
@@ -533,8 +533,8 @@ export const DEMO_PRESET_IMAGES = [
       unit: 'Sachets',
       temperatureRequirement: 'Ambient Dry (< 30°C)',
       isColdChain: false,
-      confidenceScore: 0.93,
-      notes: 'Handwritten ledger entry verified by Pharmacist In-Charge. Physical count matches entry.'
+      confidenceScore: 0.95,
+      notes: 'Handwritten ledger slip extracted via Multimodal OCR. Pharmacist signature verified.'
     }
   }
 ];

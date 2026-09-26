@@ -14,7 +14,12 @@ import {
   Key,
   ExternalLink,
   PlusCircle,
-  Hash
+  Hash,
+  Edit3,
+  PenTool,
+  PackageCheck,
+  ShieldCheck,
+  Info
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { 
@@ -26,17 +31,46 @@ import {
 import { DEMO_PRESET_IMAGES } from '../data/mockData';
 
 export default function ShelfScanner({ facilities, onCommitInventory }) {
+  const [activeTabMode, setActiveTabMode] = useState('packaging'); // 'packaging' | 'paper' | 'manual'
   const [selectedPreset, setSelectedPreset] = useState(DEMO_PRESET_IMAGES[0]);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [targetFacilityId, setTargetFacilityId] = useState('FAC-CHC-JATNI');
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState(DEMO_PRESET_IMAGES[0].mockExtracted);
-  const [enteredQuantity, setEnteredQuantity] = useState(DEMO_PRESET_IMAGES[0].mockExtracted?.quantityDetected || 50);
+  
+  // Fully Editable Pharmacist Fields
+  const [editableMetadata, setEditableMetadata] = useState({
+    medicineName: DEMO_PRESET_IMAGES[0].mockExtracted.medicineName,
+    manufacturer: DEMO_PRESET_IMAGES[0].mockExtracted.manufacturer,
+    batchNumber: DEMO_PRESET_IMAGES[0].mockExtracted.batchNumber,
+    manufacturingDate: DEMO_PRESET_IMAGES[0].mockExtracted.manufacturingDate,
+    expiryDate: DEMO_PRESET_IMAGES[0].mockExtracted.expiryDate,
+    quantityDetected: DEMO_PRESET_IMAGES[0].mockExtracted.quantityDetected,
+    unit: DEMO_PRESET_IMAGES[0].mockExtracted.unit,
+    temperatureRequirement: DEMO_PRESET_IMAGES[0].mockExtracted.temperatureRequirement,
+    isColdChain: DEMO_PRESET_IMAGES[0].mockExtracted.isColdChain,
+    notes: DEMO_PRESET_IMAGES[0].mockExtracted.notes,
+    confidenceScore: DEMO_PRESET_IMAGES[0].mockExtracted.confidenceScore
+  });
+
+  const [enteredQuantity, setEnteredQuantity] = useState(DEMO_PRESET_IMAGES[0].mockExtracted?.quantityDetected || 40);
   const [commitSuccess, setCommitSuccess] = useState(false);
+  const [hasUserEdited, setHasUserEdited] = useState(false);
   const [apiKey, setApiKeyInput] = useState(getGeminiApiKey());
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [analysisSource, setAnalysisSource] = useState('Google Gemini 3.5 Flash Live');
   const [isOfflineEdgeMode, setIsOfflineEdgeMode] = useState(false);
+
+  // Helper to update specific metadata field
+  const handleFieldChange = (field, value) => {
+    setEditableMetadata(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    setHasUserEdited(true);
+    if (field === 'quantityDetected') {
+      setEnteredQuantity(value);
+    }
+  };
 
   // Sync enteredQuantity whenever scanResult changes
   React.useEffect(() => {
@@ -51,16 +85,14 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
     setUploadedImage(null);
     setCommitSuccess(false);
     setIsScanning(true);
-    setScanResult(null);
+    setHasUserEdited(false);
 
     if (isOfflineEdgeMode) {
       setAnalysisSource('Running On-Device Edge-AI (Quantized TFLite/Wasm)...');
       setTimeout(() => {
         setAnalysisSource('⚡ Edge-AI On-Device (Quantized TFLite/Wasm - 0ms Network Latency)');
-        setScanResult({
-          ...preset.mockExtracted,
-          _offlineEdgeProcessed: true
-        });
+        setEditableMetadata({ ...preset.mockExtracted });
+        setEnteredQuantity(preset.mockExtracted.quantityDetected);
         setIsScanning(false);
       }, 250);
       return;
@@ -73,15 +105,18 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
       const liveData = await analyzeMedicinePresetWithGemini(preset.name, targetFac.name);
       if (liveData) {
         setAnalysisSource(`Live Google ${liveData._activeModel || 'Gemini Flash'} API`);
-        setScanResult(liveData);
+        setEditableMetadata({ ...liveData });
+        setEnteredQuantity(liveData.quantityDetected || 40);
       } else {
         setAnalysisSource('Local Verified Pharma Registry');
-        setScanResult(preset.mockExtracted);
+        setEditableMetadata({ ...preset.mockExtracted });
+        setEnteredQuantity(preset.mockExtracted.quantityDetected);
       }
     } catch (err) {
       console.warn('Live Gemini scan error:', err);
       setAnalysisSource('Local Verified Pharma Registry');
-      setScanResult(preset.mockExtracted);
+      setEditableMetadata({ ...preset.mockExtracted });
+      setEnteredQuantity(preset.mockExtracted.quantityDetected);
     } finally {
       setIsScanning(false);
     }
@@ -90,7 +125,6 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
   // Re-analyze active preset or uploaded image with live Gemini API
   const handleReanalyze = async () => {
     setIsScanning(true);
-    setScanResult(null);
     setAnalysisSource('Re-evaluating with Gemini 3.5 Flash...');
 
     try {
@@ -99,24 +133,26 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
         const liveResult = await analyzeMedicineImageWithGemini(base64Data, 'image/jpeg');
         if (liveResult) {
           setAnalysisSource(`Live Google ${liveResult._activeModel || 'Gemini Flash'} API`);
-          setScanResult(liveResult);
+          setEditableMetadata({ ...liveResult });
+          setEnteredQuantity(liveResult.quantityDetected || 40);
           return;
         }
       }
       
       const targetFac = facilities?.find(f => f.id === targetFacilityId) || { name: 'CHC Jatni' };
-      const drugName = selectedPreset?.name || scanResult?.medicineName || 'Anti-Snake Venom';
+      const drugName = selectedPreset?.name || editableMetadata?.medicineName || 'Anti-Snake Venom';
       const liveData = await analyzeMedicinePresetWithGemini(drugName, targetFac.name);
       if (liveData) {
         setAnalysisSource(`Live Google ${liveData._activeModel || 'Gemini Flash'} API`);
-        setScanResult(liveData);
+        setEditableMetadata({ ...liveData });
+        setEnteredQuantity(liveData.quantityDetected || 40);
       } else {
         setAnalysisSource('Local Verified Pharma Registry');
-        setScanResult(selectedPreset?.mockExtracted || scanResult);
+        setEditableMetadata({ ...(selectedPreset?.mockExtracted || editableMetadata) });
       }
     } catch (err) {
       console.warn('Re-analysis error:', err);
-      setScanResult(selectedPreset?.mockExtracted || scanResult);
+      setEditableMetadata(selectedPreset?.mockExtracted || editableMetadata);
     } finally {
       setIsScanning(false);
     }
@@ -134,7 +170,7 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
       setSelectedPreset(null);
       setCommitSuccess(false);
       setIsScanning(true);
-      setScanResult(null);
+      setHasUserEdited(false);
 
       // Extract raw base64 string
       const base64Data = base64Url.split(',')[1];
@@ -146,11 +182,12 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
 
         if (liveResult) {
           setAnalysisSource('Live Gemini 1.5/Flash API');
-          setScanResult(liveResult);
+          setEditableMetadata({ ...liveResult });
+          setEnteredQuantity(liveResult.quantityDetected || 50);
         } else {
           // Intelligent fallback if no API key is provided
           setAnalysisSource('Intelligent Vision Fallback');
-          setScanResult({
+          const fallbackData = {
             medicineName: file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ").toUpperCase() || 'Amoxicillin Dispersible 250mg',
             manufacturer: 'National Health Mission (Govt Supply)',
             batchNumber: 'BATCH-24K-' + Math.floor(1000 + Math.random() * 9000),
@@ -162,12 +199,14 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
             isColdChain: true,
             confidenceScore: 0.95,
             notes: 'Extracted from user camera image upload via neural OCR.'
-          });
+          };
+          setEditableMetadata(fallbackData);
+          setEnteredQuantity(fallbackData.quantityDetected);
         }
       } catch (err) {
         console.warn('Falling back to local OCR model:', err);
         setAnalysisSource('Intelligent Vision Fallback');
-        setScanResult({
+        const fallbackData = {
           medicineName: 'Amoxicillin Trihydrate Dispersible 250mg',
           manufacturer: 'Cipla Health Ltd (Govt Supply)',
           batchNumber: 'AMX-24R-' + Math.floor(1000 + Math.random() * 9000),
@@ -179,7 +218,9 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
           isColdChain: false,
           confidenceScore: 0.93,
           notes: 'Camera snapshot verified against Indian EDL schema.'
-        });
+        };
+        setEditableMetadata(fallbackData);
+        setEnteredQuantity(fallbackData.quantityDetected);
       } finally {
         setIsScanning(false);
       }
@@ -187,12 +228,12 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
     reader.readAsDataURL(file);
   };
 
-  // Commit extracted stock with user-entered arriving quantity into the live PHC
+  // Commit verified stock with user-entered arriving quantity into the live PHC
   const handleCommit = () => {
-    if (!scanResult) return;
+    if (!editableMetadata) return;
 
     onCommitInventory(targetFacilityId, {
-      ...scanResult,
+      ...editableMetadata,
       quantityDetected: enteredQuantity,
       ledgerAuditHash: 'SHA256: 7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
       sanctionProtocol: 'NLEM-2022-DIGITAL-INGEST'
@@ -270,7 +311,24 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
         </div>
 
         <div style={{ padding: '1.25rem' }}>
-          {/* Quick Preset Selector for Judges */}
+          {/* Frontline Pharmacist Protocol Guidance Banner */}
+          <div style={{
+            background: 'rgba(56, 189, 248, 0.08)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.75rem 0.9rem',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.6rem'
+          }}>
+            <Info size={16} color="#38bdf8" style={{ marginTop: '2px', flexShrink: 0 }} />
+            <div style={{ fontSize: '0.76rem', color: '#cbd5e1', lineHeight: '1.4' }}>
+              <strong style={{ color: '#fff' }}>Frontline Pharmaceutical Protocol:</strong> Always scan the <strong>outer carton box</strong> or <strong>tablet blister foil cover</strong> containing the printed medicine name, batch number, and expiries. Anonymous loose tablets cannot be identified by color/shape. If photo is unclear, scan a <strong>Paper Register</strong> or use <strong>Direct Manual Input</strong> on the right.
+            </div>
+          </div>
+
+          {/* Quick Preset Selector for Ground-Truth Test Samples */}
           <div style={{ marginBottom: '1.25rem' }}>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: '600' }}>
               Select a Ground-Truth Test Sample (or upload your own photo):
@@ -426,25 +484,83 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
           ) : scanResult ? (
             <div>
               {/* Medicine Title & Cold-Chain Badge */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: '#fff' }}>
-                    {scanResult.medicineName}
-                  </h3>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Manufacturer: <strong>{scanResult.manufacturer}</strong>
+              {/* Pharmacist Editable Header with Live Badge */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ flex: 1, minWidth: '220px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#38bdf8', fontWeight: '800', textTransform: 'uppercase' }}>
+                      MEDICINE NAME & STRENGTH (EDITABLE)
+                    </span>
+                    {hasUserEdited && (
+                      <span style={{ fontSize: '0.68rem', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.15)', padding: '1px 6px', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
+                        ✏️ Pharmacist Modified
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={editableMetadata.medicineName}
+                    onChange={(e) => handleFieldChange('medicineName', e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: 'var(--bg-surface-elevated)',
+                      border: '1.5px solid #38bdf8',
+                      color: '#ffffff',
+                      fontSize: '1.05rem',
+                      fontWeight: '800',
+                      padding: '0.45rem 0.65rem',
+                      borderRadius: 'var(--radius-sm)',
+                      outline: 'none'
+                    }}
+                  />
+                  <div style={{ marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>Manufacturer:</span>
+                    <input
+                      type="text"
+                      value={editableMetadata.manufacturer}
+                      onChange={(e) => handleFieldChange('manufacturer', e.target.value)}
+                      style={{
+                        flex: 1,
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid var(--border-subtle)',
+                        color: '#cbd5e1',
+                        fontSize: '0.78rem',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: 'var(--radius-sm)',
+                        outline: 'none'
+                      }}
+                    />
                   </div>
                 </div>
 
-                {scanResult.isColdChain && (
-                  <span className="status-badge" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)' }}>
-                    <ThermometerSnowflake size={13} />
-                    Cold Chain Required
-                  </span>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', alignItems: 'flex-end' }}>
+                  <label style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>Storage Class:</label>
+                  <select
+                    value={editableMetadata.isColdChain ? 'cold' : 'ambient'}
+                    onChange={(e) => {
+                      const isCold = e.target.value === 'cold';
+                      handleFieldChange('isColdChain', isCold);
+                      handleFieldChange('temperatureRequirement', isCold ? '2°C - 8°C (Refrigerated Cold-Chain)' : 'Ambient Dry (< 30°C)');
+                    }}
+                    style={{
+                      background: editableMetadata.isColdChain ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                      color: editableMetadata.isColdChain ? '#38bdf8' : '#e2e8f0',
+                      border: editableMetadata.isColdChain ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.75rem',
+                      fontWeight: '700',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="cold" style={{ background: '#0b1329', color: '#38bdf8' }}>❄️ Cold Chain (2°C–8°C)</option>
+                    <option value="ambient" style={{ background: '#0b1329', color: '#fff' }}>🌡️ Ambient Dry (&lt;30°C)</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Data Grid */}
+              {/* Data Grid with Direct Editable Inputs */}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
@@ -456,43 +572,100 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
                 marginBottom: '1rem'
               }}>
                 <div>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>
-                    Extracted Batch Number
-                  </span>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontWeight: '700', color: '#fff', fontSize: '0.95rem' }}>
-                    {scanResult.batchNumber}
-                  </div>
+                  <label style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>
+                    Batch Number (Edit if OCR Error)
+                  </label>
+                  <input
+                    type="text"
+                    value={editableMetadata.batchNumber}
+                    onChange={(e) => handleFieldChange('batchNumber', e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: '700',
+                      color: '#38bdf8',
+                      fontSize: '0.9rem',
+                      background: 'rgba(0,0,0,0.2)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.35rem 0.5rem',
+                      outline: 'none'
+                    }}
+                  />
                 </div>
 
                 <div>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>
-                    Detected Quantity
-                  </span>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontWeight: '700', color: '#38bdf8', fontSize: '1.05rem' }}>
-                    +{scanResult.quantityDetected} {scanResult.unit}
-                  </div>
+                  <label style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>
+                    Packaging Unit
+                  </label>
+                  <select
+                    value={editableMetadata.unit}
+                    onChange={(e) => handleFieldChange('unit', e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(0,0,0,0.2)',
+                      color: '#fff',
+                      fontSize: '0.85rem',
+                      fontWeight: '700',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.35rem 0.5rem',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="Vials" style={{ background: '#0b1329' }}>Vials</option>
+                    <option value="Ampoules" style={{ background: '#0b1329' }}>Ampoules</option>
+                    <option value="Tablets (10 Strips)" style={{ background: '#0b1329' }}>Tablets (10 Strips)</option>
+                    <option value="Sachets" style={{ background: '#0b1329' }}>Sachets</option>
+                    <option value="Bottles" style={{ background: '#0b1329' }}>Bottles</option>
+                  </select>
                 </div>
 
                 <div>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>
+                  <label style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>
                     Manufacturing Date
-                  </span>
-                  <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
-                    {scanResult.manufacturingDate}
-                  </div>
+                  </label>
+                  <input
+                    type="date"
+                    value={editableMetadata.manufacturingDate}
+                    onChange={(e) => handleFieldChange('manufacturingDate', e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '0.82rem',
+                      color: '#cbd5e1',
+                      background: 'rgba(0,0,0,0.2)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.35rem 0.5rem',
+                      outline: 'none'
+                    }}
+                  />
                 </div>
 
                 <div>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>
+                  <label style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>
                     Expiration Date
-                  </span>
-                  <div style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: '700' }}>
-                    {scanResult.expiryDate}
-                  </div>
+                  </label>
+                  <input
+                    type="date"
+                    value={editableMetadata.expiryDate}
+                    onChange={(e) => handleFieldChange('expiryDate', e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '0.85rem',
+                      color: '#10b981',
+                      fontWeight: '700',
+                      background: 'rgba(0,0,0,0.2)',
+                      border: '1px solid #10b981',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.35rem 0.5rem',
+                      outline: 'none'
+                    }}
+                  />
                 </div>
               </div>
 
-              {/* Storage Note */}
+              {/* Editable Clinical Notes */}
               <div style={{
                 fontSize: '0.8rem',
                 color: 'var(--text-muted)',
@@ -502,7 +675,22 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
                 borderLeft: '3px solid #38bdf8',
                 marginBottom: '1rem'
               }}>
-                <strong>Clinical Notes:</strong> {scanResult.notes}
+                <div style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: '700', marginBottom: '0.2rem' }}>
+                  CLINICAL NOTES & RECONSTITUTION (PHARMACIST VERIFIED):
+                </div>
+                <input
+                  type="text"
+                  value={editableMetadata.notes}
+                  onChange={(e) => handleFieldChange('notes', e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#e2e8f0',
+                    fontSize: '0.78rem',
+                    outline: 'none'
+                  }}
+                />
               </div>
 
               {/* Practical Quantity Intake Input: Solves 3D Image Counting Limit */}

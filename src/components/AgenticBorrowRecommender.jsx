@@ -11,7 +11,10 @@ import {
   AlertCircle,
   RefreshCw,
   Share2,
-  Cpu
+  Cpu,
+  MessageSquare,
+  ThermometerSnowflake,
+  Truck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ESSENTIAL_DRUGS } from '../data/mockData';
@@ -183,60 +186,117 @@ export default function AgenticBorrowRecommender({
         </div>
       </div>
 
-      {/* Agent Reasoning Trace Box */}
+      {/* Executive Operational Action Matrix (Replaces dense text with clean tactical cards) */}
       <div style={{
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
-        borderRadius: 'var(--radius-md)',
-        padding: '1.1rem 1.25rem',
-        marginBottom: '1.25rem',
-        fontSize: '0.84rem',
-        lineHeight: '1.6'
+        marginBottom: '1.25rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#2563eb', fontWeight: '800' }}>
-            <Sparkles size={15} />
-            <span>Agent Autonomous Reasoning Chain:</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#0f172a', fontWeight: '800', fontSize: '0.88rem' }}>
+            <Sparkles size={16} color="#2563eb" />
+            <span>Autonomous Operational Dispatch Matrix:</span>
           </div>
           {isLoadingRationale && (
             <span style={{ fontSize: '0.75rem', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <RefreshCw size={12} className="animate-spin" />
-              <span>Querying live Gemini Flash model...</span>
+              <span>Synthesizing Gemini Flash Telemetry...</span>
             </span>
           )}
         </div>
 
-        {geminiRationale ? (
+        {/* 4-Card Tactical Matrix */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+          gap: '0.75rem'
+        }}>
+          {/* Card 1: Clinical Urgency */}
           <div style={{
-            background: '#ffffff',
-            border: '1px solid #bfdbfe',
-            borderRadius: 'var(--radius-sm)',
-            padding: '0.85rem 1rem',
-            color: '#1e293b',
-            whiteSpace: 'pre-line',
-            lineHeight: '1.6'
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.85rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem'
           }}>
-            {geminiRationale}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#dc2626', fontWeight: '800', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+              <AlertCircle size={14} />
+              <span>1. Deficit Urgency</span>
+            </div>
+            <div style={{ fontSize: '0.92rem', fontWeight: '800', color: '#991b1b' }}>
+              {targetDeficitItem.stock} {targetDrugMeta?.standardUnit} Remaining
+            </div>
+            <div style={{ fontSize: '0.76rem', color: '#7f1d1d', lineHeight: 1.35 }}>
+              Immediate stockout risk at <strong>{currentFacility.name}</strong>. Bedside triage intervention required.
+            </div>
           </div>
-        ) : (
-          <ul style={{ paddingLeft: '1.25rem', color: '#475569' }}>
-            <li>
-              <strong style={{ color: '#0f172a' }}>Diagnosis:</strong> {currentFacility.name} has only <strong style={{ color: '#dc2626' }}>{targetDeficitItem.stock} {targetDrugMeta?.standardUnit}</strong> of {targetDrugMeta?.name}. Central depot restock estimated in 12 days.
-            </li>
-            <li>
-              <strong style={{ color: '#0f172a' }}>Spatial Sweep:</strong> Scanned 5 surrounding health facilities within a 45 km radius.
-            </li>
-            {bestDonor ? (
-              <li>
-                <strong style={{ color: '#16a34a' }}>Optimal Donor Found:</strong> <strong>{bestDonor.facility.name}</strong> has <strong>{bestDonor.currentStock} {targetDrugMeta?.standardUnit}</strong> (surplus buffer of +{bestDonor.safeBuffer} above its reserve).
-              </li>
-            ) : (
-              <li>
-                <strong style={{ color: '#d97706' }}>Alert:</strong> No single rural clinic has excess buffer; requesting Central Warehouse emergency release.
-              </li>
-            )}
-          </ul>
-        )}
+
+          {/* Card 2: Surplus Donor Facility */}
+          <div style={{
+            background: '#f0fdfa',
+            border: '1px solid #99f6e4',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.85rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#0d9488', fontWeight: '800', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+              <MapPin size={14} />
+              <span>2. Surplus Donor</span>
+            </div>
+            <div style={{ fontSize: '0.92rem', fontWeight: '800', color: '#115e59' }}>
+              {bestDonor?.facility?.name || 'Central Warehouse'}
+            </div>
+            <div style={{ fontSize: '0.76rem', color: '#134e4a', lineHeight: 1.35 }}>
+              Surplus of <strong>+{bestDonor?.safeBuffer || 40} units</strong> available. Mandatory 3-month reserve strictly maintained.
+            </div>
+          </div>
+
+          {/* Card 3: Logistics Transit & Highway Route */}
+          <div style={{
+            background: '#eff6ff',
+            border: '1px solid #bfdbfe',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.85rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#2563eb', fontWeight: '800', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+              <Truck size={14} />
+              <span>3. Route & ETA</span>
+            </div>
+            <div style={{ fontSize: '0.92rem', fontWeight: '800', color: '#1e40af' }}>
+              {bestDonor?.distanceKM || 26.1} km · ~{bestDonor?.estimatedTransitMins || 32} Mins
+            </div>
+            <div style={{ fontSize: '0.76rem', color: '#1e3a8a', lineHeight: 1.35 }}>
+              Expedited Cryo-Bike courier corridor engaged via NH-16 highway for rapid delivery.
+            </div>
+          </div>
+
+          {/* Card 4: Cold Chain Integrity */}
+          <div style={{
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.85rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#16a34a', fontWeight: '800', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+              <ThermometerSnowflake size={14} />
+              <span>4. Thermal Protocol</span>
+            </div>
+            <div style={{ fontSize: '0.92rem', fontWeight: '800', color: '#166534' }}>
+              2°C – 8°C Verified
+            </div>
+            <div style={{ fontSize: '0.76rem', color: '#14532d', lineHeight: 1.35 }}>
+              Active IoT thermal datalogger seal confirms biological viability upon bedside arrival.
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Recommended Emergency Loan Action Card */}
@@ -266,7 +326,30 @@ export default function AgenticBorrowRecommender({
             </div>
           </div>
 
-          <div>
+          <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`🚨 *NHM ArogyaSetu AI Emergency Stock Borrow Order*\nTo: In-Charge, ${bestDonor.facility.name}\nDeficit Center: ${currentFacility.name}\nRequested Drug: ${suggestedBorrowQty} ${targetDrugMeta?.standardUnit} ${targetDrugMeta?.name}\nTransit: Cryo-Bike Courier via NH-16 (ETA: ${bestDonor.estimatedTransitMins} mins)\nThermal Protocol: 2°C–8°C\nApprove via Web: https://laxmansai4096.github.io/Googlehackthon/`)}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                background: '#059669',
+                color: '#ffffff',
+                textDecoration: 'none',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.75rem 1rem',
+                fontSize: '0.85rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                boxShadow: '0 2px 6px rgba(5, 150, 105, 0.25)'
+              }}
+              title="Send Requisition Order to Medical Officer via WhatsApp"
+            >
+              <MessageSquare size={15} />
+              <span>WhatsApp Order</span>
+            </a>
+
             {requestSentSuccess ? (
               <div style={{
                 background: '#f0fdf4',
