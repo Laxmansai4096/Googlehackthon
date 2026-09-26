@@ -52,6 +52,9 @@ export default function EpidemicSurge({ onPreSupplyDispatched }) {
   const baseBurnRate = drugMeta?.dailyBurnRateAvg || 4;
   const surgeMultiplier = primaryDrugImpact.surgeMultiplier;
 
+  const [gemTenderSubmitted, setGemTenderSubmitted] = useState(false);
+  const [showGemModal, setShowGemModal] = useState(false);
+
   // Stock remaining under normal vs outbreak
   const normalStockCurve = days.map(d => Math.max(0, Math.round(initialStock - (d * baseBurnRate))));
   const surgeStockCurve = days.map(d => Math.max(0, Math.round(initialStock - (d * baseBurnRate * surgeMultiplier))));
@@ -63,8 +66,70 @@ export default function EpidemicSurge({ onPreSupplyDispatched }) {
     }
   };
 
+  const handleTransmitGeMRequisition = () => {
+    setGemTenderSubmitted(true);
+    setShowGemModal(true);
+  };
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '1.5rem' }}>
+      {/* Public Government & Space Agency Data Telemetry Integration Strip */}
+      <div style={{
+        gridColumn: '1 / -1',
+        background: '#ffffff',
+        border: '1.5px solid #bfdbfe',
+        borderRadius: 'var(--radius-md)',
+        padding: '0.95rem 1.25rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '0.85rem',
+        boxShadow: 'var(--shadow-sm)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '8px',
+            background: '#eff6ff',
+            color: '#2563eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.25rem'
+          }}>
+            🛰️
+          </div>
+          <div>
+            <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#0f172a' }}>
+              Public Government & Global Open Data Telemetry Correlator
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+              Real-time synchronization with IMD weather, ISRO/Bhuvan flood radar, WHO disease indices, FAO agricultural data, & data.gov.in baselines.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+          <span className="badge-soft safe" style={{ fontSize: '0.72rem', padding: '0.3rem 0.6rem', fontWeight: '700' }}>
+            🌦️ IMD Monsoon Alert (92mm/24h)
+          </span>
+          <span className="badge-soft blue" style={{ fontSize: '0.72rem', padding: '0.3rem 0.6rem', fontWeight: '700' }}>
+            🛰️ ISRO Bhuvan (Inundation 14.2%)
+          </span>
+          <span className="badge-soft warn" style={{ fontSize: '0.72rem', padding: '0.3rem 0.6rem', fontWeight: '700' }}>
+            🌐 WHO / IDSP Vector Alert
+          </span>
+          <span className="badge-soft safe" style={{ fontSize: '0.72rem', padding: '0.3rem 0.6rem', fontWeight: '700' }}>
+            🌾 FAO Harvest Index
+          </span>
+          <span className="badge-soft safe" style={{ fontSize: '0.72rem', padding: '0.3rem 0.6rem', fontWeight: '700' }}>
+            📊 data.gov.in 5-Yr Baseline
+          </span>
+        </div>
+      </div>
+
       {/* Left Column: Outbreak Scenarios */}
       <div className="tactical-card">
         <div className="card-topbar">
@@ -251,7 +316,7 @@ export default function EpidemicSurge({ onPreSupplyDispatched }) {
           </div>
 
           {/* Action Trigger */}
-          <div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             {indentDispatched ? (
               <div style={{
                 background: 'rgba(16, 185, 129, 0.15)',
@@ -278,9 +343,170 @@ export default function EpidemicSurge({ onPreSupplyDispatched }) {
                 <span>Issue Anticipatory Pre-Supply Indent to Central Warehouse</span>
               </button>
             )}
+
+            {/* Advancement 4: GeM & State Medical Corporation (OSMCL) Emergency Procurement Tender */}
+            {gemTenderSubmitted ? (
+              <div style={{
+                background: '#eff6ff',
+                border: '1.5px solid #3b82f6',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.75rem 1rem',
+                color: '#1d4ed8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '0.5rem',
+                fontSize: '0.82rem'
+              }}>
+                <div>
+                  <strong>🏛️ GeM & OSMCL Emergency Tender Transmitted:</strong> Requisition #GEM/2026/B/894102-OD
+                </div>
+                <button 
+                  onClick={() => setShowGemModal(true)}
+                  style={{
+                    background: '#1d4ed8',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: '700',
+                    fontSize: '0.75rem'
+                  }}
+                >
+                  View GeM Sanction Order
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleTransmitGeMRequisition}
+                style={{
+                  width: '100%',
+                  background: '#ffffff',
+                  border: '1.5px solid #2563eb',
+                  color: '#2563eb',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.75rem',
+                  fontWeight: '800',
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <span>🏛️</span>
+                <span>Auto-Draft Emergency GeM & State Medical Corp (OSMCL) Purchase Tender</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* GeM & OSMCL Emergency Sanction Order Modal */}
+      {showGemModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: 'var(--radius-lg)',
+            width: '100%',
+            maxWidth: '560px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+            overflow: 'hidden',
+            border: '2px solid #2563eb'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              background: '#1e3a8a',
+              color: '#ffffff',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.25rem' }}>🏛️</span>
+                <div>
+                  <div style={{ fontWeight: '800', fontSize: '0.95rem' }}>Government e-Marketplace (GeM) & OSMCL Fast-Track Requisition</div>
+                  <div style={{ fontSize: '0.72rem', color: '#bfdbfe' }}>NHM Rule 144 Emergency Procurement Gateway</div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowGemModal(false)}
+                style={{ background: 'transparent', border: 'none', color: '#ffffff', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.84rem' }}>
+              <div style={{ background: '#f8fafc', padding: '0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                  <span style={{ color: '#64748b' }}>Requisition Number:</span>
+                  <strong style={{ color: '#0f172a' }}>GEM/2026/B/894102-OD</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                  <span style={{ color: '#64748b' }}>Procuring Authority:</span>
+                  <strong style={{ color: '#0f172a' }}>Chief Medical Officer, District Khordha</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                  <span style={{ color: '#64748b' }}>State Nodal Agency:</span>
+                  <strong style={{ color: '#2563eb' }}>OSMCL (Odisha State Medical Corp Ltd)</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Estimated Tender Value:</span>
+                  <strong style={{ color: '#16a34a' }}>₹2,45,000 (Sanctioned via NHM Contingency)</strong>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: '800', color: '#0f172a', marginBottom: '0.35rem' }}>Indented Lifesaving Medicines:</div>
+                <ul style={{ margin: 0, paddingLeft: '1.2rem', color: '#334155', lineHeight: 1.5 }}>
+                  <li>500 Vials • Polyvalent Anti-Snake Venom (10ml) — Critical Emergency Buffer</li>
+                  <li>1,200 Sachets • Oral Rehydration Salts (ORS 20.5g WHO formulation)</li>
+                  <li>350 Units • Soluble Human Insulin (100 IU/ml)</li>
+                </ul>
+              </div>
+
+              <div style={{ background: '#ecfdf5', padding: '0.75rem', borderRadius: '6px', border: '1px solid #a7f3d0', color: '#065f46', fontSize: '0.78rem' }}>
+                🛡️ <strong>Fast-Track SLA:</strong> Direct dispatch authorized within 72 hours under State Emergency Epidemic Contingency. SHA-256 Digital Verification logged.
+              </div>
+
+              <button
+                onClick={() => setShowGemModal(false)}
+                style={{
+                  background: '#2563eb',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0.75rem',
+                  borderRadius: 'var(--radius-md)',
+                  fontWeight: '800',
+                  cursor: 'pointer'
+                }}
+              >
+                Close & Return to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

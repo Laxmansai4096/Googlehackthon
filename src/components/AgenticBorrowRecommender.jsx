@@ -137,12 +137,6 @@ export default function AgenticBorrowRecommender({
       if (onTriggerTransfer) {
         onTriggerTransfer();
       }
-
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.6 }
-      });
     }, 900);
   };
 

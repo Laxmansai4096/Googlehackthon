@@ -24,12 +24,6 @@ export default function InterClinicRouter({
   const handleStartTransfer = () => {
     setTransitStep('dispatched');
     onTriggerTransfer();
-
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.6 }
-    });
   };
 
   return (

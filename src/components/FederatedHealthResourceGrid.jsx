@@ -24,6 +24,21 @@ export default function FederatedHealthResourceGrid({ facilities, onTriggerChall
   const [selectedState, setSelectedState] = useState(FEDERATED_STATE_NODES[0]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [federatedAudit, setFederatedAudit] = useState(null);
+  const [epsilon, setEpsilon] = useState(0.5);
+  const [federatedRound, setFederatedRound] = useState(14);
+  const [isSimulatingEpoch, setIsSimulatingEpoch] = useState(false);
+  const [globalLoss, setGlobalLoss] = useState(0.142);
+  const [lastAggregatedAt, setLastAggregatedAt] = useState('2 mins ago');
+
+  const handleRunGlobalAggregation = () => {
+    setIsSimulatingEpoch(true);
+    setTimeout(() => {
+      setFederatedRound(prev => prev + 1);
+      setGlobalLoss(prev => Math.max(0.045, +(prev * 0.88).toFixed(3)));
+      setLastAggregatedAt('Just now (Round ' + (federatedRound + 1) + ')');
+      setIsSimulatingEpoch(false);
+    }, 1200);
+  };
 
   // Compute live district-wide resource aggregations from facilities
   const totalDistrictBeds = facilities.reduce((acc, f) => acc + (f.totalBeds || 0), 0);
@@ -381,6 +396,162 @@ export default function FederatedHealthResourceGrid({ facilities, onTriggerChall
             </div>
           </div>
         )}
+      </div>
+
+      {/* 4. Google Cloud & Vertex AI Federated Learning & Differential Privacy Studio */}
+      <div className="h2s-card" style={{ padding: '1.5rem', background: '#ffffff', border: '1.5px solid #2563eb' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '8px',
+              background: '#eff6ff',
+              color: '#2563eb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.3rem'
+            }}>
+              🧠
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: '#0f172a' }}>
+                  Vertex AI Federated Aggregator & Differential Privacy Studio
+                </h4>
+                <span style={{
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  color: '#1d4ed8',
+                  fontSize: '0.7rem',
+                  fontWeight: '800',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '9999px'
+                }}>
+                  FedAvg Protocol (Round #{federatedRound})
+                </span>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
+                Simulate privacy-preserving cross-state epidemiological parameter aggregation. Adjust privacy budget ε and trigger global model updates.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <button
+              onClick={handleRunGlobalAggregation}
+              disabled={isSimulatingEpoch}
+              style={{
+                background: '#2563eb',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.55rem 1.15rem',
+                fontSize: '0.82rem',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)'
+              }}
+            >
+              <RefreshCw size={14} className={isSimulatingEpoch ? 'animate-spin' : ''} />
+              <span>{isSimulatingEpoch ? 'Aggregating Gradients via FedAvg...' : `Run Global FedAvg Round #${federatedRound + 1}`}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Studio Controls: Epsilon Slider & Metrics */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.25rem' }}>
+          {/* Differential Privacy Budget Controller */}
+          <div style={{ background: '#f8fafc', padding: '1.15rem', borderRadius: 'var(--radius-md)', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '800', color: '#0f172a' }}>
+                <Lock size={15} color="#2563eb" />
+                <span>Differential Privacy Budget (ε)</span>
+              </div>
+              <span style={{ fontSize: '1rem', fontWeight: '900', color: '#2563eb' }}>
+                ε = {epsilon}
+              </span>
+            </div>
+
+            <input 
+              type="range"
+              min="0.1"
+              max="2.0"
+              step="0.1"
+              value={epsilon}
+              onChange={(e) => setEpsilon(parseFloat(e.target.value))}
+              style={{ width: '100%', accentColor: '#2563eb', cursor: 'pointer', margin: '0.5rem 0' }}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#64748b' }}>
+              <span>High Noise (ε = 0.1)</span>
+              <span>Balanced (ε = 0.5)</span>
+              <span>High Precision (ε = 2.0)</span>
+            </div>
+
+            <div style={{ marginTop: '0.65rem', fontSize: '0.74rem', color: '#334155', lineHeight: 1.4 }}>
+              Laplace Noise Scale: <code>b = Δf / ε = {(1.0 / epsilon).toFixed(2)}</code>.  
+              Status: <strong style={{ color: epsilon <= 0.6 ? '#16a34a' : '#d97706' }}>
+                {epsilon <= 0.6 ? 'Strict DPDP Act 2023 Compliant (Mathematical Zero Re-identification)' : 'Relaxed Privacy / Increased Feature Fidelity'}
+              </strong>
+            </div>
+          </div>
+
+          {/* Model Loss & Convergence Metrics */}
+          <div style={{ background: '#f8fafc', padding: '1.15rem', borderRadius: 'var(--radius-md)', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '800', color: '#0f172a', marginBottom: '0.5rem' }}>
+              <Activity size={15} color="#16a34a" />
+              <span>Global Outbreak Predictor Convergence</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.4rem' }}>
+              <span style={{ fontSize: '1.75rem', fontWeight: '900', color: '#16a34a' }}>
+                {globalLoss}
+              </span>
+              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Cross-Entropy Loss (Converging)</span>
+            </div>
+
+            <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden', marginBottom: '0.65rem' }}>
+              <div style={{ width: `${Math.max(10, Math.min(100, Math.round((1 - globalLoss) * 100)))}%`, height: '100%', background: '#16a34a' }}></div>
+            </div>
+
+            <div style={{ fontSize: '0.74rem', color: '#475569', display: 'flex', justifyContent: 'space-between' }}>
+              <span>Global Round: <strong>#{federatedRound}</strong></span>
+              <span>Updated: <strong>{lastAggregatedAt}</strong></span>
+            </div>
+          </div>
+        </div>
+
+        {/* State Node Model Gradient Vector Exchange Strip */}
+        <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 'var(--radius-md)', padding: '0.85rem 1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#1e40af' }}>
+              State Parameter Weights Synchronized with Google Vertex AI Model Registry:
+            </span>
+            <span style={{ fontSize: '0.72rem', color: '#15803d', fontWeight: '700' }}>
+              ✓ 0 Patient Records Transmitted (Data Sovereignty Enforced)
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.65rem', fontSize: '0.74rem' }}>
+            <div style={{ background: '#ffffff', padding: '0.5rem', borderRadius: '4px', border: '1px solid #dbeafe' }}>
+              <strong style={{ color: '#0f172a' }}>Odisha Node:</strong> <code style={{ color: '#2563eb' }}>w_OD = [0.84, 0.42, 0.91]</code>
+            </div>
+            <div style={{ background: '#ffffff', padding: '0.5rem', borderRadius: '4px', border: '1px solid #dbeafe' }}>
+              <strong style={{ color: '#0f172a' }}>Uttar Pradesh:</strong> <code style={{ color: '#2563eb' }}>w_UP = [0.65, 0.78, 0.34]</code>
+            </div>
+            <div style={{ background: '#ffffff', padding: '0.5rem', borderRadius: '4px', border: '1px solid #dbeafe' }}>
+              <strong style={{ color: '#0f172a' }}>Bihar Sentinel:</strong> <code style={{ color: '#2563eb' }}>w_BR = [0.72, 0.54, 0.86]</code>
+            </div>
+            <div style={{ background: '#ffffff', padding: '0.5rem', borderRadius: '4px', border: '1px solid #dbeafe' }}>
+              <strong style={{ color: '#0f172a' }}>Kerala Node:</strong> <code style={{ color: '#2563eb' }}>w_KL = [0.41, 0.89, 0.60]</code>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

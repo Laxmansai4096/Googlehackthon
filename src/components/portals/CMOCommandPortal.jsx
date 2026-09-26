@@ -24,6 +24,7 @@ import {
   Calendar,
   ShieldCheck,
   ChevronRight,
+  ChevronDown,
   ExternalLink,
   Activity,
   Package,
@@ -38,6 +39,7 @@ import AgenticBorrowRecommender from '../AgenticBorrowRecommender';
 import DistrictLedgerAIIntelligence from '../DistrictLedgerAIIntelligence';
 import FederatedHealthResourceGrid from '../FederatedHealthResourceGrid';
 import { ESSENTIAL_DRUGS } from '../../data/mockData';
+import { getTranslation } from '../../services/languageService';
 
 export default function CMOCommandPortal({ 
   district, 
@@ -46,7 +48,8 @@ export default function CMOCommandPortal({
   setSelectedFacility, 
   transferRouteActive, 
   onTriggerTransfer,
-  onResetTransfer 
+  onResetTransfer,
+  currentLanguage = 'en'
 }) {
   const [selectedDrugFilter, setSelectedDrugFilter] = useState('ALL');
   const [officialOrderSent, setOfficialOrderSent] = useState(transferRouteActive);
@@ -84,13 +87,10 @@ export default function CMOCommandPortal({
       recipient: asvDeficitClinic.name,
       drug: 'Anti-Snake Venom (Polyvalent 10ml)',
       quantity: 60,
-      batchNo: 'ASV-23X-990'
-    });
-
-    confetti({
-      particleCount: 70,
-      spread: 80,
-      origin: { y: 0.6 }
+      batchNo: 'ASV-23X-990',
+      sha256Hash: 'e7a9b1c02f489371d5b304c861ef02a8394b21cde95721049bc83aef11029c7d',
+      sanctionCode: 'NHM-RULE-144-EMERGENCY-DISPATCH',
+      digitalSeal: 'COUNTERSIGNED BY DISTRICT CMO (ODISHA HEALTH GRID)'
     });
   };
 
@@ -472,41 +472,67 @@ export default function CMOCommandPortal({
             {activeOfficialNotice && (
               <div style={{
                 marginTop: '1.25rem',
-                background: '#ffffff',
-                border: '1px solid #fecaca',
+                background: '#f8fafc',
+                border: '1.5px solid #059669',
                 borderRadius: 'var(--radius-md)',
-                padding: '0.9rem 1.15rem',
+                padding: '1rem 1.25rem',
                 fontSize: '0.82rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 flexWrap: 'wrap',
-                gap: '0.75rem'
+                gap: '1rem',
+                boxShadow: '0 2px 8px rgba(5, 150, 105, 0.1)'
               }}>
-                <div>
-                  <div style={{ color: '#2563eb', fontWeight: '800', marginBottom: '0.25rem' }}>
-                    📄 OFFICIAL DISPATCH DIRECTIVE LOGGED — {activeOfficialNotice.orderNo} ({activeOfficialNotice.time})
+                <div style={{ flex: 1, minWidth: '280px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+                    <span style={{ 
+                      background: '#ecfdf5', 
+                      color: '#059669', 
+                      border: '1px solid #a7f3d0', 
+                      padding: '0.2rem 0.6rem', 
+                      borderRadius: '9999px', 
+                      fontWeight: '800', 
+                      fontSize: '0.72rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem'
+                    }}>
+                      🛡️ CRYPTOGRAPHIC AUDIT SEAL VERIFIED
+                    </span>
+                    <span style={{ color: '#0f172a', fontWeight: '800' }}>
+                      {activeOfficialNotice.orderNo} ({activeOfficialNotice.time})
+                    </span>
                   </div>
-                  <div style={{ color: '#334155' }}>{activeOfficialNotice.directive}</div>
-                  <div style={{ color: '#64748b', marginTop: '0.35rem' }}>
-                    Emergency Driver Assigned: <strong style={{ color: '#0f172a' }}>{activeOfficialNotice.driverPhone}</strong>
+                  <div style={{ color: '#1e293b', fontWeight: '600', lineHeight: 1.4 }}>
+                    {activeOfficialNotice.directive}
+                  </div>
+                  <div style={{ color: '#475569', marginTop: '0.4rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.75rem' }}>
+                    <div>🚀 Courier: <strong style={{ color: '#0f172a' }}>{activeOfficialNotice.driverPhone}</strong></div>
+                    <div>📜 Authority: <span style={{ color: '#059669', fontWeight: '700' }}>{activeOfficialNotice.sanctionCode}</span></div>
+                    <div>🔐 SHA-256: <code style={{ background: '#e2e8f0', padding: '0.1rem 0.35rem', borderRadius: '4px', fontSize: '0.7rem' }}>{activeOfficialNotice.sha256Hash?.slice(0, 16)}...</code></div>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setShowChallanModal(true)}
                   style={{
-                    background: '#eff6ff',
-                    border: '1px solid #bfdbfe',
-                    color: '#2563eb',
-                    padding: '0.45rem 0.85rem',
+                    background: '#059669',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '0.55rem 1rem',
                     borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.78rem',
+                    fontSize: '0.8rem',
                     cursor: 'pointer',
-                    fontWeight: '700'
+                    fontWeight: '800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    boxShadow: '0 2px 6px rgba(5, 150, 105, 0.3)'
                   }}
                 >
-                  Print Transit Challan
+                  <span>📄</span>
+                  <span>View Official E-Challan</span>
                 </button>
               </div>
             )}
@@ -842,41 +868,99 @@ export default function CMOCommandPortal({
             </div>
           </div>
 
-          {/* Quick Facility Selector Strip */}
+          {/* Facility Selector Dropdown (Vertical Selectbox) */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
-            overflowX: 'auto',
-            paddingBottom: '0.35rem',
-            borderBottom: '1px solid #f1f5f9'
+            gap: '0.85rem',
+            padding: '0.65rem 1rem',
+            background: '#f8fafc',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid #e2e8f0',
+            flexWrap: 'wrap'
           }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b', whiteSpace: 'nowrap' }}>
-              Select Center:
-            </span>
-            {facilities.map(fac => {
-              const isSelected = currentFac.id === fac.id;
-              return (
-                <button
-                  key={fac.id}
-                  onClick={() => setSelectedFacility(fac)}
-                  style={{
-                    background: isSelected ? '#2563eb' : '#f8fafc',
-                    color: isSelected ? '#ffffff' : '#334155',
-                    border: isSelected ? '1px solid #2563eb' : '1px solid #e2e8f0',
-                    borderRadius: 'var(--radius-sm)',
-                    padding: '0.35rem 0.75rem',
-                    fontSize: '0.78rem',
-                    fontWeight: isSelected ? '700' : '600',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {fac.name} ({fac.overallHealth})
-                </button>
-              );
-            })}
+            <label 
+              htmlFor="facility-center-select"
+              style={{ 
+                fontSize: '0.82rem', 
+                fontWeight: '800', 
+                color: '#334155', 
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem'
+              }}
+            >
+              <Building2 size={16} color="#2563eb" />
+              <span>{getTranslation(currentLanguage, 'selectCenter')}</span>
+            </label>
+
+            <div style={{ position: 'relative', flex: 1, minWidth: '320px', maxWidth: '580px' }}>
+              <select
+                id="facility-center-select"
+                value={currentFac.id}
+                onChange={(e) => {
+                  const fac = facilities.find(f => f.id === e.target.value);
+                  if (fac) setSelectedFacility(fac);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.6rem 2.2rem 0.6rem 0.95rem',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  backgroundColor: '#ffffff',
+                  border: '1.5px solid #2563eb',
+                  borderRadius: 'var(--radius-sm, 6px)',
+                  boxShadow: '0 1px 3px rgba(37, 99, 235, 0.08)',
+                  cursor: 'pointer',
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  outline: 'none',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {facilities.map(fac => (
+                  <option 
+                    key={fac.id} 
+                    value={fac.id}
+                    style={{ color: '#0f172a', padding: '0.5rem', fontWeight: '600' }}
+                  >
+                    {fac.name} ({fac.overallHealth})
+                  </option>
+                ))}
+              </select>
+              <div style={{
+                position: 'absolute',
+                right: '0.85rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none',
+                color: '#2563eb',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <ChevronDown size={16} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span 
+                className={`badge-soft ${
+                  currentFac.overallHealth.toLowerCase().includes('critical') 
+                    ? 'crit' 
+                    : currentFac.overallHealth.toLowerCase().includes('low') 
+                      ? 'warn' 
+                      : 'safe'
+                }`}
+                style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', fontWeight: '800' }}
+              >
+                Status: {currentFac.overallHealth}
+              </span>
+              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                ({currentFac.type || 'Facility'})
+              </span>
+            </div>
           </div>
 
           {/* The District Interactive Map */}

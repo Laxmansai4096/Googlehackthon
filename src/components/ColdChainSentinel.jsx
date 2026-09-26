@@ -48,11 +48,6 @@ export default function ColdChainSentinel({ facilities }) {
 
   const handleDispatchEvacuation = () => {
     setAlertDispatched(true);
-    confetti({
-      particleCount: 50,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
   };
 
   return (

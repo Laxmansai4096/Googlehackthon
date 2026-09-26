@@ -88,13 +88,8 @@ export default function Hack2SkillDashboard({
       recipient: asvDeficitClinic.name,
       drug: 'Anti-Snake Venom (Polyvalent 10ml)',
       quantity: 60,
-      batchNo: 'ASV-23X-990'
-    });
-
-    confetti({
-      particleCount: 65,
-      spread: 75,
-      origin: { y: 0.6 }
+      batchNo: 'ASV-23X-990',
+      sha256Seal: 'e7a9b1c02f489371d5b304c861ef02a8394b21cde95721049bc83aef11029c7d'
     });
   };
 

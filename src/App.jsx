@@ -16,6 +16,7 @@ import {
   FileText,
   RotateCcw
 } from 'lucide-react';
+import ArogyaChatbot from './components/ArogyaChatbot';
 
 const STORAGE_KEY_FACILITIES = 'AROGYASETU_LIVE_FACILITIES';
 const STORAGE_KEY_TRANSFER = 'AROGYASETU_TRANSFER_ACTIVE';
@@ -23,6 +24,7 @@ const STORAGE_KEY_TRANSFER = 'AROGYASETU_TRANSFER_ACTIVE';
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null); // null = shows LoginPage initially
   const [currentDistrict, setCurrentDistrict] = useState(DISTRICTS[0]);
+  const [currentLanguage, setCurrentLanguage] = useState('en'); // 'en', 'hi', 'or', 'bn', 'te', 'ta'
   const [activeTab, setActiveTab] = useState('initiatives'); // 'initiatives', 'recommended', 'applications'
   
   // Persistent facilities from localStorage or initial
@@ -183,6 +185,8 @@ export default function App() {
         setCurrentRole={setCurrentRole}
         criticalAlertCount={criticalCount}
         onOpenGoogleAIModal={() => setShowGoogleAIModal(true)}
+        currentLanguage={currentLanguage}
+        onSelectLanguage={setCurrentLanguage}
       />
 
       {/* Global Notification Alert */}
@@ -212,6 +216,7 @@ export default function App() {
             transferRouteActive={transferRouteActive}
             onTriggerTransfer={handleTriggerTransfer}
             onResetTransfer={handleResetTransfer}
+            currentLanguage={currentLanguage}
           />
         )}
 
@@ -232,11 +237,11 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Buttons: Reset Database & Pitch Deck */}
+      {/* Floating Buttons: Reset Database & Pitch Deck (Left Aligned) */}
       <div style={{
         position: 'fixed',
         bottom: '20px',
-        right: '20px',
+        left: '20px',
         zIndex: 1000,
         display: 'flex',
         gap: '0.75rem'
@@ -276,6 +281,12 @@ export default function App() {
       <GoogleAITelemetryModal 
         isOpen={showGoogleAIModal} 
         onClose={() => setShowGoogleAIModal(false)} 
+      />
+
+      {/* Multilingual Voice & Text AI Copilot Chatbot */}
+      <ArogyaChatbot 
+        facilities={facilities} 
+        currentLanguage={currentLanguage} 
       />
 
       {/* Pitch Deck / Demo Walkthrough Modal */}

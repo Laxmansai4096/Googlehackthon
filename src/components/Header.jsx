@@ -12,6 +12,7 @@ import {
   Layers
 } from 'lucide-react';
 import { DISTRICTS } from '../data/mockData';
+import { SUPPORTED_LANGUAGES, getTranslation } from '../services/languageService';
 
 export default function Header({ 
   currentUser,
@@ -21,7 +22,9 @@ export default function Header({
   currentRole, 
   setCurrentRole,
   criticalAlertCount,
-  onOpenGoogleAIModal
+  onOpenGoogleAIModal,
+  currentLanguage = 'en',
+  onSelectLanguage
 }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [selectedLang, setSelectedLang] = useState('English');
@@ -48,43 +51,46 @@ export default function Header({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           {currentRole === 'cmo' && (
             <div className="badge-soft blue" style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: '800', borderRadius: 'var(--radius-full)' }}>
-              🏛️ Chief Medical Officer (CMO) · District Authority Session
+              🏛️ {getTranslation(currentLanguage, 'cmoRoleTitle')}
             </div>
           )}
           {currentRole === 'pharmacist' && (
             <div className="badge-soft safe" style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: '800', borderRadius: 'var(--radius-full)' }}>
-              💊 PHC Dispensary Pharmacist · Local Inventory Session
+              💊 {getTranslation(currentLanguage, 'pharmacistRoleTitle')}
             </div>
           )}
           {currentRole === 'asha' && (
             <div className="badge-soft warn" style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: '800', borderRadius: 'var(--radius-full)' }}>
-              🩺 ASHA Community Health Worker · Bedside Field Session
+              🩺 {getTranslation(currentLanguage, 'ashaRoleTitle')}
             </div>
           )}
         </div>
 
         {/* Right Section: Language, Home, Blogs, My Dashboard, Google AI, Bell, User Avatar */}
         <div className="nav-links-wrap">
-          {/* Select Language Dropdown (Like Hack2Skill Screenshot) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.84rem', color: '#475569', fontWeight: '600' }}>
+          {/* Select Regional Language Dropdown with Auto Translation */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.84rem', color: '#1e40af', fontWeight: '700', background: '#eff6ff', padding: '0.3rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid #bfdbfe' }}>
+            <Globe size={14} color="#2563eb" />
             <select
-              value={selectedLang}
-              onChange={(e) => setSelectedLang(e.target.value)}
+              value={currentLanguage}
+              onChange={(e) => onSelectLanguage && onSelectLanguage(e.target.value)}
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: '#475569',
+                color: '#1e40af',
                 fontSize: '0.84rem',
-                fontWeight: '600',
+                fontWeight: '700',
                 outline: 'none',
                 cursor: 'pointer',
                 fontFamily: 'inherit'
               }}
+              title="Select Regional Language (Translates UI while preserving proper nouns)"
             >
-              <option value="English">Select Language ▼</option>
-              <option value="English">English</option>
-              <option value="Hindi">हिंदी (Hindi)</option>
-              <option value="Odia">ଓଡ଼ିଆ (Odia)</option>
+              {SUPPORTED_LANGUAGES.map(lang => (
+                <option key={lang.code} value={lang.code} style={{ background: '#ffffff', color: '#0f172a' }}>
+                  {lang.nativeName}
+                </option>
+              ))}
             </select>
           </div>
 
