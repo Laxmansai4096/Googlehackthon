@@ -149,6 +149,69 @@ export default function ArogyaChatbot({ facilities, currentLanguage = 'en' }) {
     }
   };
 
+  const formatChatMessage = (text) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+        {lines.map((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed) return <div key={idx} style={{ height: '3px' }} />;
+          
+          const parts = trimmed.split(/(\*\*.*?\*\*)/g);
+          const renderedParts = parts.map((part, pIdx) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={pIdx} style={{ color: '#0f172a', fontWeight: '800' }}>{part.slice(2, -2)}</strong>;
+            }
+            return part;
+          });
+
+          // Bullet points
+          if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
+            const cleanContent = trimmed.replace(/^[•\-]\s*/, '');
+            const cleanParts = cleanContent.split(/(\*\*.*?\*\*)/g).map((part, pIdx) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={pIdx} style={{ color: '#0f172a', fontWeight: '800' }}>{part.slice(2, -2)}</strong>;
+              }
+              return part;
+            });
+            return (
+              <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.45rem', paddingLeft: '0.25rem', lineHeight: 1.45 }}>
+                <span style={{ color: '#2563eb', fontWeight: 'bold' }}>•</span>
+                <span style={{ flex: 1, color: '#334155' }}>{cleanParts}</span>
+              </div>
+            );
+          }
+
+          // Header / Key Highlights with Emojis
+          if (trimmed.startsWith('📍') || trimmed.startsWith('🚨') || trimmed.startsWith('🏥') || trimmed.startsWith('❄️') || trimmed.startsWith('📊') || trimmed.startsWith('🛡️') || trimmed.startsWith('⚠️') || trimmed.startsWith('🏍️') || trimmed.startsWith('📞')) {
+            return (
+              <div key={idx} style={{ 
+                fontWeight: '700', 
+                color: '#0f172a', 
+                marginTop: idx > 0 ? '0.35rem' : '0',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderLeft: '3px solid #2563eb',
+                padding: '0.4rem 0.65rem',
+                borderRadius: '6px',
+                fontSize: '0.84rem'
+              }}>
+                {renderedParts}
+              </div>
+            );
+          }
+
+          return (
+            <div key={idx} style={{ lineHeight: 1.45, color: '#1e293b' }}>
+              {renderedParts}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const QUICK_QUESTIONS = [
     'Where is Anti-Snake Venom surplus available in Khordha?',
     'Show IMD flood & vector surge alerts for Jatni',
@@ -293,14 +356,15 @@ export default function ArogyaChatbot({ facilities, currentLanguage = 'en' }) {
                 <div style={{
                   background: msg.sender === 'user' ? '#2563eb' : '#ffffff',
                   color: msg.sender === 'user' ? '#ffffff' : '#0f172a',
-                  padding: '0.75rem 0.95rem',
+                  padding: '0.8rem 1rem',
                   borderRadius: msg.sender === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+                  boxShadow: '0 1px 4px rgba(0, 0, 0, 0.07)',
                   border: msg.sender === 'user' ? 'none' : '1px solid #e2e8f0',
                   fontSize: '0.84rem',
-                  lineHeight: 1.45
+                  lineHeight: 1.5,
+                  wordBreak: 'break-word'
                 }}>
-                  {msg.text}
+                  {msg.sender === 'user' ? msg.text : formatChatMessage(msg.text)}
                 </div>
 
                 <div style={{
