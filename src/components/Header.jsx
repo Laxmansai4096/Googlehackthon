@@ -47,23 +47,62 @@ export default function Header({
           </span>
         </div>
 
-        {/* Center: Authenticated Role Session Indicator (No free switching without logout) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          {currentRole === 'cmo' && (
-            <div className="badge-soft blue" style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: '800', borderRadius: 'var(--radius-full)' }}>
-              🏛️ {getTranslation(currentLanguage, 'cmoRoleTitle')}
-            </div>
-          )}
-          {currentRole === 'pharmacist' && (
-            <div className="badge-soft safe" style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: '800', borderRadius: 'var(--radius-full)' }}>
-              💊 {getTranslation(currentLanguage, 'pharmacistRoleTitle')}
-            </div>
-          )}
-          {currentRole === 'asha' && (
-            <div className="badge-soft warn" style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: '800', borderRadius: 'var(--radius-full)' }}>
-              🩺 {getTranslation(currentLanguage, 'ashaRoleTitle')}
-            </div>
-          )}
+        {/* Center: Interactive Role Switcher Pills */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: '#f1f5f9', padding: '3px 4px', borderRadius: '9999px', border: '1px solid #e2e8f0' }}>
+          <button
+            type="button"
+            onClick={() => setCurrentRole && setCurrentRole('cmo')}
+            style={{
+              padding: '0.38rem 0.85rem',
+              fontSize: '0.78rem',
+              fontWeight: '800',
+              borderRadius: '9999px',
+              border: 'none',
+              cursor: 'pointer',
+              background: currentRole === 'cmo' ? '#2563eb' : 'transparent',
+              color: currentRole === 'cmo' ? '#ffffff' : '#64748b',
+              boxShadow: currentRole === 'cmo' ? '0 2px 6px rgba(37, 99, 235, 0.25)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            🏛️ {getTranslation(currentLanguage, 'cmoRoleTitle')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentRole && setCurrentRole('pharmacist')}
+            style={{
+              padding: '0.38rem 0.85rem',
+              fontSize: '0.78rem',
+              fontWeight: '800',
+              borderRadius: '9999px',
+              border: 'none',
+              cursor: 'pointer',
+              background: currentRole === 'pharmacist' ? '#16a34a' : 'transparent',
+              color: currentRole === 'pharmacist' ? '#ffffff' : '#64748b',
+              boxShadow: currentRole === 'pharmacist' ? '0 2px 6px rgba(22, 163, 74, 0.25)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            💊 {getTranslation(currentLanguage, 'pharmacistRoleTitle')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentRole && setCurrentRole('asha')}
+            style={{
+              padding: '0.38rem 0.85rem',
+              fontSize: '0.78rem',
+              fontWeight: '800',
+              borderRadius: '9999px',
+              border: 'none',
+              cursor: 'pointer',
+              background: currentRole === 'asha' ? '#d97706' : 'transparent',
+              color: currentRole === 'asha' ? '#ffffff' : '#64748b',
+              boxShadow: currentRole === 'asha' ? '0 2px 6px rgba(217, 119, 6, 0.25)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            🩺 {getTranslation(currentLanguage, 'ashaRoleTitle')}
+          </button>
         </div>
 
         {/* Right Section: Language, Home, Blogs, My Dashboard, Google AI, Bell, User Avatar */}

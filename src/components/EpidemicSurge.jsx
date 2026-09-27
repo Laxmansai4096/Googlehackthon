@@ -22,13 +22,38 @@ export default function EpidemicSurge({ onPreSupplyDispatched }) {
   const [geminiForecast, setGeminiForecast] = useState(null);
   const [isForecastLoading, setIsForecastLoading] = useState(false);
 
-  // Query live Gemini 3.5 Flash for epidemiological projection
+  // Generate deterministic mathematical time-series points for the primary impacted drug
+  const primaryDrugImpact = activeScenario.impactedDrugs[0];
+  const drugMeta = ESSENTIAL_DRUGS.find(d => d.id === primaryDrugImpact.drugId);
+
+  // Days: 1 to 30
+  const days = [1, 5, 10, 15, 20, 25, 30];
+  const initialStock = 50;
+  const baseBurnRate = drugMeta?.dailyBurnRateAvg || 4;
+  const surgeMultiplier = primaryDrugImpact.surgeMultiplier;
+  const dailySurgeRate = Math.round(baseBurnRate * surgeMultiplier);
+  const daysToStockout = Math.max(1, Math.round(initialStock / dailySurgeRate));
+  const normalDays = Math.round(initialStock / baseBurnRate);
+  const leadTimeDays = 14;
+  const shortfall = Math.max(0, (leadTimeDays * dailySurgeRate) - initialStock);
+
+  // Query live Google Gemini Flash for epidemiological projection grounded in math
   useEffect(() => {
     let isCancelled = false;
     async function fetchForecast() {
       setIsForecastLoading(true);
       try {
-        const text = await queryGeminiEpidemicSurgeForecast(activeScenario.title);
+        const mathTelemetry = {
+          baseBurnRate,
+          surgeMultiplier,
+          dailySurgeRate,
+          currentStock: initialStock,
+          daysToStockout,
+          normalDays,
+          leadTimeDays,
+          shortfall
+        };
+        const text = await queryGeminiEpidemicSurgeForecast(activeScenario.title, 'Khordha District', mathTelemetry);
         if (!isCancelled && text) {
           setGeminiForecast(text);
         }
@@ -40,17 +65,7 @@ export default function EpidemicSurge({ onPreSupplyDispatched }) {
     }
     fetchForecast();
     return () => { isCancelled = true; };
-  }, [activeScenario.id]);
-
-  // Generate 30-day predictive points for the primary impacted drug
-  const primaryDrugImpact = activeScenario.impactedDrugs[0];
-  const drugMeta = ESSENTIAL_DRUGS.find(d => d.id === primaryDrugImpact.drugId);
-
-  // Days: 1 to 30
-  const days = [1, 5, 10, 15, 20, 25, 30];
-  const initialStock = 50;
-  const baseBurnRate = drugMeta?.dailyBurnRateAvg || 4;
-  const surgeMultiplier = primaryDrugImpact.surgeMultiplier;
+  }, [activeScenario.id, baseBurnRate, surgeMultiplier]);
 
   const [gemTenderSubmitted, setGemTenderSubmitted] = useState(false);
   const [showGemModal, setShowGemModal] = useState(false);

@@ -44,36 +44,19 @@ export default function AgenticBorrowRecommender({
   const [isLoadingRationale, setIsLoadingRationale] = useState(false);
 
   const currentFacility = deficitFacility || facilities?.[1];
-  if (!currentFacility) return null;
 
   // Identify all medicines currently Low or Stock-Out in this facility
-  const deficitItems = currentFacility.inventory.filter(
+  const deficitItems = currentFacility?.inventory ? currentFacility.inventory.filter(
     item => item.status === 'Critical Stock-Out' || item.status === 'Low Stock' || item.stock <= 5
-  );
-
-  if (deficitItems.length === 0) {
-    return (
-      <div className="h2s-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-        <ShieldCheck size={28} color="#16a34a" />
-        <div>
-          <strong style={{ color: '#166534', fontSize: '0.92rem' }}>
-            Agentic Sentinel: Inventory Self-Sufficient
-          </strong>
-          <div style={{ fontSize: '0.8rem', color: '#15803d', marginTop: '2px' }}>
-            All critical essential drugs at {currentFacility.name} have sufficient buffer for the next 14+ days.
-          </div>
-        </div>
-      </div>
-    );
-  }
+  ) : [];
 
   // Pick the most critical deficit drug
   const targetDeficitItem = deficitItems[0];
-  const targetDrugMeta = ESSENTIAL_DRUGS.find(d => d.id === targetDeficitItem.drugId);
+  const targetDrugMeta = targetDeficitItem ? ESSENTIAL_DRUGS.find(d => d.id === targetDeficitItem.drugId) : null;
 
   // Agentic Search: Look across other facilities for one with surplus or safe buffer
   const allFacilities = facilities || [];
-  const donorCandidates = allFacilities
+  const donorCandidates = (currentFacility && targetDeficitItem) ? allFacilities
     .filter(fac => fac.id !== currentFacility.id)
     .map(fac => {
       const matchingStock = fac.inventory.find(i => i.drugId === targetDeficitItem.drugId);
@@ -97,18 +80,18 @@ export default function AgenticBorrowRecommender({
       };
     })
     .filter(candidate => candidate.canLend)
-    .sort((a, b) => a.distanceKM - b.distanceKM); // Sort by nearest first
+    .sort((a, b) => a.distanceKM - b.distanceKM) : []; // Sort by nearest first
 
   const bestDonor = donorCandidates[0];
 
   // Recommended bridge quantity (enough for 7 days until state tender arrives)
   const suggestedBorrowQty = targetDrugMeta ? Math.min(bestDonor?.safeBuffer || 20, targetDrugMeta.dailyBurnRateAvg * 7) : 15;
 
-  // Live call to Google Gemini 3.5 Flash for autonomous supply rationale
+  // Live call to Google Gemini 3.5 Flash for autonomous supply rationale (called unconditionally)
   useEffect(() => {
     let isCancelled = false;
     async function fetchRationale() {
-      if (!bestDonor || !targetDrugMeta) return;
+      if (!currentFacility || !bestDonor || !targetDrugMeta) return;
       setIsLoadingRationale(true);
       try {
         const text = await queryGeminiLogisticsRationale(
@@ -130,6 +113,24 @@ export default function AgenticBorrowRecommender({
     return () => { isCancelled = true; };
   }, [currentFacility?.id, bestDonor?.facility?.id, targetDeficitItem?.drugId]);
 
+  if (!currentFacility) return null;
+
+  if (deficitItems.length === 0) {
+    return (
+      <div className="h2s-card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+        <ShieldCheck size={28} color="#16a34a" />
+        <div>
+          <strong style={{ color: '#166534', fontSize: '0.92rem' }}>
+            Agentic Sentinel: Inventory Self-Sufficient
+          </strong>
+          <div style={{ fontSize: '0.8rem', color: '#15803d', marginTop: '2px' }}>
+            All critical essential drugs at {currentFacility.name} have sufficient buffer for the next 14+ days.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleSendBorrowRequest = () => {
     setIsAgentThinking(true);
     
@@ -137,8 +138,18 @@ export default function AgenticBorrowRecommender({
       setIsAgentThinking(false);
       setRequestSentSuccess(true);
 
-      if (onTriggerTransfer) {
-        onTriggerTransfer();
+      if (onTriggerTransfer && bestDonor) {
+        onTriggerTransfer({
+          donorFacilityId: bestDonor.facility.id,
+          recipientFacilityId: currentFacility.id,
+          drugId: targetDeficitItem.drugId,
+          drugName: targetDrugMeta?.name || targetDeficitItem.drugId,
+          quantity: suggestedBorrowQty,
+          batchNo: bestDonor.stockItem?.batchNo || ('ASV-24X-' + Math.floor(100 + Math.random() * 900)),
+          expiryDays: bestDonor.stockItem?.expiryDays || 42,
+          donorName: bestDonor.facility.name,
+          recipientName: currentFacility.name
+        });
       }
     }, 900);
   };

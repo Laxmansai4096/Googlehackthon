@@ -60,6 +60,9 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
   const [analysisSource, setAnalysisSource] = useState('Google Gemini 3.5 Flash Live');
   const [isOfflineEdgeMode, setIsOfflineEdgeMode] = useState(false);
 
+  // Alias scanResult to editableMetadata so all UI bindings resolve safely
+  const scanResult = editableMetadata;
+
   // Helper to update specific metadata field
   const handleFieldChange = (field, value) => {
     setEditableMetadata(prev => ({
@@ -72,12 +75,6 @@ export default function ShelfScanner({ facilities, onCommitInventory }) {
     }
   };
 
-  // Sync enteredQuantity whenever scanResult changes
-  React.useEffect(() => {
-    if (scanResult?.quantityDetected) {
-      setEnteredQuantity(scanResult.quantityDetected);
-    }
-  }, [scanResult]);
 
   // Handle preset selection with live Gemini API extraction or Offline Edge-AI
   const handleSelectPreset = async (preset) => {

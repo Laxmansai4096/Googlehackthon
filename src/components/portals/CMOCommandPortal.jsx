@@ -48,6 +48,7 @@ export default function CMOCommandPortal({
   setSelectedFacility, 
   transferRouteActive, 
   onTriggerTransfer,
+  onDistrictWideRebalance,
   onResetTransfer,
   currentLanguage = 'en'
 }) {
@@ -72,8 +73,30 @@ export default function CMOCommandPortal({
     f.inventory.some(i => i.drugId === 'MED-ASV' && i.stock > 50)
   ) || facilities[2]; // default Balipatna
 
-  const handleDispatchOfficialDirective = () => {
+  const handleDispatchOfficialDirective = (transferData) => {
     setOfficialOrderSent(true);
+
+    if (transferData && transferData.donorFacilityId) {
+      onTriggerTransfer(transferData);
+      const orderNo = `NHM/OD-KHD/EMERGENCY-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      setActiveOfficialNotice({
+        orderNo: orderNo,
+        time: new Date().toLocaleTimeString(),
+        directive: `URGENT EXECUTIVE DIRECTIVE: Chief Medical Officer orders Pharmacist at ${transferData.donorName || 'Donor'} to immediately release ${transferData.quantity || 60} units of ${transferData.drugName || 'medicine'} to emergency cryo-bike courier for immediate delivery to ${transferData.recipientName || 'Recipient'}.`,
+        driverPhone: '+91 94372 10982 (Rabi Sahoo - Cryo-Bike Courier)',
+        donor: transferData.donorName || 'Donor Clinic',
+        recipient: transferData.recipientName || 'Recipient Clinic',
+        drug: transferData.drugName || 'Anti-Snake Venom (Polyvalent 10ml)',
+        quantity: transferData.quantity || 60,
+        batchNo: transferData.batchNo || 'ASV-23X-990',
+        sha256Hash: 'e7a9b1c02f489371d5b304c861ef02a8394b21cde95721049bc83aef11029c7d',
+        sanctionCode: 'NHM-RULE-144-EMERGENCY-DISPATCH',
+        digitalSeal: 'COUNTERSIGNED BY DISTRICT CMO (ODISHA HEALTH GRID)'
+      });
+      return;
+    }
+
     onTriggerTransfer();
 
     const orderNo = `NHM/OD-KHD/EMERGENCY-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -1268,8 +1291,29 @@ export default function CMOCommandPortal({
       {/* ========================================================================= */}
       {activeSection === 'recommender' && (
         <div id="cmo-recommender-section">
+          {onDistrictWideRebalance && (
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                className="btn-primary"
+                onClick={onDistrictWideRebalance}
+                style={{
+                  background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+                  padding: '0.65rem 1.25rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>⚡ Run Network-Wide Autonomous Rebalance (Google OR-Tools Heuristic)</span>
+              </button>
+            </div>
+          )}
           <AgenticBorrowRecommender 
-            deficitFacility={asvDeficitClinic}
+            deficitFacility={selectedFacility || asvDeficitClinic}
             facilities={facilities}
             onTriggerTransfer={handleDispatchOfficialDirective}
           />

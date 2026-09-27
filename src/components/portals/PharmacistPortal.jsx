@@ -14,6 +14,7 @@ import {
   QrCode
 } from 'lucide-react';
 import ShelfScanner from '../ShelfScanner';
+import ErrorBoundary from '../ErrorBoundary';
 import { ESSENTIAL_DRUGS } from '../../data/mockData';
 
 export default function PharmacistPortal({ 
@@ -159,10 +160,12 @@ export default function PharmacistPortal({
           </div>
 
           <div className="h2s-card" style={{ padding: '1.5rem' }}>
-            <ShelfScanner 
-              facilities={facilities}
-              onCommitInventory={onCommitInventory}
-            />
+            <ErrorBoundary fallbackTitle="Pharmaceutical Stock Scanner Error Recovery">
+              <ShelfScanner 
+                facilities={facilities}
+                onCommitInventory={onCommitInventory}
+              />
+            </ErrorBoundary>
           </div>
         </div>
       )}
@@ -217,10 +220,10 @@ export default function PharmacistPortal({
                   const isLow = item.status === 'Low Stock';
 
                   return (
-                    <tr key={item.drugId}>
+                    <tr key={item.drugId || item.batchNo}>
                       <td>
-                        <div style={{ fontWeight: '700', color: '#0f172a' }}>{drugMeta?.name}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{drugMeta?.tier}</div>
+                        <div style={{ fontWeight: '700', color: '#0f172a' }}>{drugMeta?.name || item.name || 'Verified Medication'}</div>
+                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{drugMeta?.tier || 'General Essential'}</div>
                       </td>
                       <td>
                         <div style={{
@@ -228,25 +231,25 @@ export default function PharmacistPortal({
                           fontWeight: '800',
                           color: isCritical ? '#dc2626' : isLow ? '#d97706' : '#16a34a'
                         }}>
-                          {item.stock} <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '500' }}>{drugMeta?.standardUnit}</span>
+                          {item.stock} <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '500' }}>{drugMeta?.standardUnit || item.unit || 'Units'}</span>
                         </div>
                       </td>
                       <td>
                         <code style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '0.2rem 0.45rem', borderRadius: '4px', fontSize: '0.75rem', color: '#334155' }}>
-                          {item.batchNo}
+                          {item.batchNo || 'N/A'}
                         </code>
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem' }}>
                           <Calendar size={13} color="#64748b" />
                           <span style={{ color: item.expiryDays < 60 && item.expiryDays > 0 ? '#d97706' : '#1e293b', fontWeight: item.expiryDays < 60 ? '700' : '500' }}>
-                            {item.expiryDate !== 'N/A' ? `${item.expiryDate} (${item.expiryDays}d)` : 'Exhausted'}
+                            {item.expiryDate && item.expiryDate !== 'N/A' ? `${item.expiryDate} (${item.expiryDays}d)` : item.expiryDays ? `${item.expiryDays}d` : 'Exhausted'}
                           </span>
                         </div>
                       </td>
                       <td>
                         <span style={{ fontSize: '0.78rem', color: '#475569' }}>
-                          {drugMeta?.tempRequirement}
+                          {drugMeta?.tempRequirement || item.tempRequirement || 'Ambient Room Temp'}
                         </span>
                       </td>
                       <td>

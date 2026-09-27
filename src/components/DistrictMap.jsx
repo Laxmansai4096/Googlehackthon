@@ -28,6 +28,9 @@ export default function DistrictMap({
   const markersGroupRef = useRef(null);
   const routeLayerRef = useRef(null);
 
+  const [mapTileMode, setMapTileMode] = React.useState('google-roads');
+  const tileLayerRef = useRef(null);
+
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -40,20 +43,42 @@ export default function DistrictMap({
         zoomControl: true
       });
 
-      // Standard OpenStreetMap Tiles (Clean, reliable, no API key watermark)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 19
+      // Default to Google Maps Road Network Tiles
+      const initialTile = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        attribution: '&copy; Google Maps Platform / TeleAtlas',
+        maxZoom: 20
       }).addTo(map);
 
+      tileLayerRef.current = initialTile;
       mapInstanceRef.current = map;
       markersGroupRef.current = L.layerGroup().addTo(map);
     }
-
-    return () => {
-      // Cleanup if needed
-    };
   }, []);
+
+  // Handle Dynamic Tile Switching (Google Maps vs Earth Engine vs OSM)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current);
+    }
+
+    let url = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
+    let attr = '&copy; Google Maps Platform / Roads';
+
+    if (mapTileMode === 'google-hybrid') {
+      url = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
+      attr = '&copy; Google Earth Engine / Satellite Hybrid';
+    } else if (mapTileMode === 'osm') {
+      url = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      attr = '&copy; OpenStreetMap contributors';
+    }
+
+    const newTile = L.tileLayer(url, { attribution: attr, maxZoom: 20 }).addTo(map);
+    tileLayerRef.current = newTile;
+    newTile.bringToBack();
+  }, [mapTileMode]);
 
   // Update Markers when facilities or selected facility changes
   useEffect(() => {
@@ -224,6 +249,58 @@ export default function DistrictMap({
             <span style={{ width: 8, height: 8, background: '#10b981', borderRadius: '50%' }}></span>
             Safe
           </span>
+
+          {/* Google Maps Platform Layer Selector */}
+          <div style={{ display: 'flex', gap: '4px', marginLeft: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
+            <button
+              type="button"
+              onClick={() => setMapTileMode('google-roads')}
+              style={{
+                fontSize: '0.68rem',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                background: mapTileMode === 'google-roads' ? '#2563eb' : 'transparent',
+                color: mapTileMode === 'google-roads' ? '#fff' : '#94a3b8',
+                fontWeight: mapTileMode === 'google-roads' ? '700' : '500'
+              }}
+            >
+              🗺️ Google Maps
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapTileMode('google-hybrid')}
+              style={{
+                fontSize: '0.68rem',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                background: mapTileMode === 'google-hybrid' ? '#2563eb' : 'transparent',
+                color: mapTileMode === 'google-hybrid' ? '#fff' : '#94a3b8',
+                fontWeight: mapTileMode === 'google-hybrid' ? '700' : '500'
+              }}
+            >
+              🛰️ Google Earth
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapTileMode('osm')}
+              style={{
+                fontSize: '0.68rem',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                background: mapTileMode === 'osm' ? '#2563eb' : 'transparent',
+                color: mapTileMode === 'osm' ? '#fff' : '#94a3b8',
+                fontWeight: mapTileMode === 'osm' ? '700' : '500'
+              }}
+            >
+              OSM
+            </button>
+          </div>
         </div>
       </div>
 
